@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生活費家計簿</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background: #fff; }
+    h1 { text-align: center; }
+    form, .summary, .list { max-width: 500px; margin: auto; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 5px; }
+    .entry { border-bottom: 1px solid #ccc; padding: 5px 0; }
+    .entry:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <h1>生活費家計簿</h1>
+
+  <form id="expense-form">
+    <input type="date" id="date" required>
+    <input type="number" id="amount" placeholder="金額 (円)" required>
+    <select id="category" required>
+      <option value="">カテゴリを選択</option>
+      <option>食費</option>
+      <option>交通費</option>
+      <option>交際費</option>
+      <option>美容</option>
+      <option>日用品</option>
+      <option>光熱費</option>
+      <option>通信費</option>
+    </select>
+    <input type="text" id="memo" placeholder="メモ (任意)">
+    <button type="submit">追加</button>
+  </form>
+
+  <div class="summary">
+    <h2>今月の合計：<span id="total">0</span>円</h2>
+  </div>
+
+  <div class="list" id="expense-list"></div>
+
+  <script>
+    const form = document.getElementById('expense-form');
+    const totalDisplay = document.getElementById('total');
+    const list = document.getElementById('expense-list');
+
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+    function saveExpenses() {
+      localStorage.setItem('expenses', JSON.stringify(expenses));
+    }
+
+    function renderExpenses() {
+      list.innerHTML = '';
+      let total = 0;
+      const thisMonth = new Date().getMonth();
+      expenses.forEach(exp => {
+        const expDate = new Date(exp.date);
+        if (expDate.getMonth() === thisMonth) {
+          total += parseFloat(exp.amount);
+          const div = document.createElement('div');
+          div.className = 'entry';
+          div.innerText = `${exp.date} | ${exp.category} | ${exp.amount}円 | ${exp.memo}`;
+          list.appendChild(div);
+        }
+      });
+      totalDisplay.textContent = total;
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const newExpense = {
+        date: document.getElementById('date').value,
+        amount: document.getElementById('amount').value,
+        category: document.getElementById('category').value,
+        memo: document.getElementById('memo').value
+      };
+      expenses.push(newExpense);
+      saveExpenses();
+      renderExpenses();
+      form.reset();
+    });
+
+    renderExpenses();
+  </script>
+
+</body>
+</html>
